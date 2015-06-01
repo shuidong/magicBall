@@ -1,18 +1,18 @@
 var StageLayer = cc.Layer.extend({
-    backGround: null,//±≥æ∞Õº∆¨
+    backGround: null,//ËÉåÊôØÂõæÁâá
     bottlePng: null,
     //world: null,
     size: null,//
-    space: null,//ŒÔ¿Ì ¿ΩÁ
+    space: null,//Áâ©ÁêÜ‰∏ñÁïå
     _debugNode: null,
 
-    renderTexture: null,//”√”⁄≥‰µ±¡Ÿ ±ªÊ÷∆µƒª∫≥Â«¯ √ø¥Œ∂‘…´«ÚΩ¯––≈˙¡øªÊ÷∆
-    mainTexture: null,//Ω´∂‡÷÷«ÚÃÂµƒ‰÷»æΩ·π˚‘Ÿ∫œ≥…µΩ’‚¿Ô
+    renderTexture: null,//Áî®‰∫éÂÖÖÂΩì‰∏¥Êó∂ÁªòÂà∂ÁöÑÁºìÂÜ≤Âå∫ ÊØèÊ¨°ÂØπËâ≤ÁêÉËøõË°åÊâπÈáèÁªòÂà∂
+    mainTexture: null,//Â∞ÜÂ§öÁßçÁêÉ‰ΩìÁöÑÊ∏≤ÊüìÁªìÊûúÂÜçÂêàÊàêÂà∞ËøôÈáå
 
     shader: null,
     mainShader: null,
 
-    balls: null,//«ÚÃÂºØ∫œπ‹¿Ì
+    balls: null,//ÁêÉ‰ΩìÈõÜÂêàÁÆ°ÁêÜ
 
     ctor: function () {
         this._super();
@@ -51,37 +51,57 @@ var StageLayer = cc.Layer.extend({
     setupGL: function () {
         //debugger;
         if ('opengl' in cc.sys.capabilities) {
-            var t = 0;
-            this.shader = new cc.GLProgram(res.vsh, res.fsh);
-            this.shader.addAttribute(cc.ATTRIBUTE_NAME_POSITION, cc.VERTEX_ATTRIB_POSITION);
-            this.shader.addAttribute(cc.ATTRIBUTE_NAME_TEX_COORD, cc.VERTEX_ATTRIB_TEX_COORDS);
-            this.shader.addAttribute(cc.ATTRIBUTE_NAME_COLOR, cc.VERTEX_ATTRIB_COLOR);
+            //var t = 0;
+            if(cc.sys.isNative){
+                this.shader = new cc.GLProgram(res.vsh, res.fsh);
+                this.shader.link();
+                this.shader.updateUniforms();
 
-            this.shader.link();
-            this.shader.updateUniforms();
-            this.shader.use();
+                var glProgram_state = cc.GLProgramState.getOrCreateWithGLProgram(this.shader);
+                glProgram_state.setUniformFloat("u_alpha_value", 0.19);
+                glProgram_state.setUniformFloat("u_color_value", 0.0);
+                //this.sprite.setGLProgramState(glProgram_state);
 
-            this.shader.setUniformLocationWith1f(this.shader.getUniformLocationForName('u_alpha_value'), 0.19);//0.25
-            this.shader.setUniformLocationWith1f(this.shader.getUniformLocationForName('u_color_value'), 0.0);
+                this.mainShader = new cc.GLProgram(res.vsh2, res.fsh2);
+                this.mainShader.link();
+                this.mainShader.updateUniforms();
+            }
+            else{
+                this.shader = new cc.GLProgram(res.vsh, res.fsh);
+                this.shader.addAttribute(cc.ATTRIBUTE_NAME_POSITION, cc.VERTEX_ATTRIB_POSITION);
+                this.shader.addAttribute(cc.ATTRIBUTE_NAME_TEX_COORD, cc.VERTEX_ATTRIB_TEX_COORDS);
+                this.shader.addAttribute(cc.ATTRIBUTE_NAME_COLOR, cc.VERTEX_ATTRIB_COLOR);
 
+                this.shader.link();
+                this.shader.updateUniforms();
+                this.shader.use();
 
-//setting for mainTex
-            this.mainShader = new cc.GLProgram(res.vsh2, res.fsh2);
-            this.mainShader.addAttribute(cc.ATTRIBUTE_NAME_POSITION, cc.VERTEX_ATTRIB_POSITION);
-            this.mainShader.addAttribute(cc.ATTRIBUTE_NAME_TEX_COORD, cc.VERTEX_ATTRIB_TEX_COORDS);
-            this.mainShader.addAttribute(cc.ATTRIBUTE_NAME_COLOR, cc.VERTEX_ATTRIB_COLOR);
+                this.shader.setUniformLocationWith1f(this.shader.getUniformLocationForName('u_alpha_value'), 0.19);//0.25
+                this.shader.setUniformLocationWith1f(this.shader.getUniformLocationForName('u_color_value'), 0.0);
 
-            this.mainShader.link();
-            this.mainShader.updateUniforms();
-            this.mainShader.use();
+                //setting for mainTex
+                this.mainShader = new cc.GLProgram(res.vsh2, res.fsh2);
+                this.mainShader.addAttribute(cc.ATTRIBUTE_NAME_POSITION, cc.VERTEX_ATTRIB_POSITION);
+                this.mainShader.addAttribute(cc.ATTRIBUTE_NAME_TEX_COORD, cc.VERTEX_ATTRIB_TEX_COORDS);
+                this.mainShader.addAttribute(cc.ATTRIBUTE_NAME_COLOR, cc.VERTEX_ATTRIB_COLOR);
 
-            this.mainShader.setUniformLocationWith1f(this.mainShader.getUniformLocationForName('u_threshold'), 1.75);
-            this.mainShader.setUniformLocationWith3f(this.mainShader.getUniformLocationForName('u_outlineColor'), 0 / 255, 255 / 255, 0 / 255);
+                this.mainShader.link();
+                this.mainShader.updateUniforms();
+                this.mainShader.use();
+            }
 ///////////////
         }
 
         this.mainTexture = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);//PIXEL_FORMAT_RGBA4444
-        this.mainTexture.getSprite().shaderProgram = this.mainShader;
+        
+        
+        if(cc.sys.isNative){
+            var glProgram_state = cc.GLProgramState.getOrCreateWithGLProgram(this.mainShader);
+            this.mainTexture.getSprite().setGLProgramState(glProgram_state);
+        }else{
+            this.mainTexture.getSprite().shaderProgram = this.mainShader;
+        }
+
         this.mainTexture.setAnchorPoint(cc.p(0.5, 0.5));
         this.mainTexture.setPosition(this.size.width / 2, this.size.height / 2);
         this.addChild(this.mainTexture, 6);
@@ -156,17 +176,19 @@ var StageLayer = cc.Layer.extend({
         var xsprite = new cc.Sprite(this.renderTexture.getSprite().texture);
         xsprite.setAnchorPoint(cc.p(0.5, 0.5));
         xsprite.setPosition(this.size.width / 2, this.size.height / 2);
-        xsprite.shaderProgram = this.shader;
         xsprite.setScaleY(-1);
-
-        this.shader.use();
-        this.shader.setUniformLocationWith1f(this.shader.getUniformLocationForName('u_color_value'), clo);
-        this.shader.updateUniforms();
-
-
-        this.mainShader.use();
-        this.mainShader.setUniformLocationWith1f(this.mainShader.getUniformLocationForName('u_radius'), 0.8);
-        this.mainShader.updateUniforms();
+        if(cc.sys.isNative){
+            var glProgram_state3 = cc.GLProgramState.getOrCreateWithGLProgram(this.shader);
+            xsprite.setGLProgramState(glProgram_state3);
+            xsprite.getGLProgramState().setUniformFloat("u_color_value", clo);
+        }else{
+            xsprite.shaderProgram = this.shader;
+            this.shader.use();
+            this.shader.setUniformLocationWith1f(this.shader.getUniformLocationForName('u_color_value'), clo);
+            this.shader.updateUniforms();
+            //this.mainShader.use();
+            //this.mainShader.updateUniforms();
+        }
 
         this.mainTexture.begin();
         xsprite.visit();

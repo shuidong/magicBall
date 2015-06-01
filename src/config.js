@@ -5,9 +5,9 @@ var GRABABLE_MASK_BIT = 1 << 31;
 var NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
 
 var gameCfg = gameCfg || {
-        ballR : 25,//30 Ð¡ÇòµÄÎïÀí°ë¾¶
-        ballScale : 1.2,//Ð¡ÇòËØ²ÄµÄ·Å´ó±ÈÂÊ
-        debugFlg : false,//±êÖ¾Î»ÓÃÓÚ ÏÔÊ¾/Òþ²Ø ÎïÀíÒýÇæµ÷ÊÔÍ¼
+        ballR : 25,//30 å°çƒçš„ç‰©ç†åŠå¾„
+        ballScale : 1.2,//å°çƒç´ æçš„æ”¾å¤§æ¯”çŽ‡
+        debugFlg : false,//æ ‡å¿—ä½ç”¨äºŽ æ˜¾ç¤º/éšè— ç‰©ç†å¼•æ“Žè°ƒè¯•å›¾
 
         layer_bkGround : 0,
         layer_bkGround : 10,
