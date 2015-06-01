@@ -1,36 +1,33 @@
-var GRABABLE_MASK_BIT = 1 << 31;
-var NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
-var ballR = 30;
+
 var StageLayer = cc.Layer.extend({
-    sprite: null,
+    backGround: null,//背景图片
     bottlePng: null,
-    world: null,
-    size: null,
-    space: null,
+    //world: null,
+    size: null,//
+    space: null,//物理世界
     _debugNode: null,
 
-    renderTexture: null,
-    mainTexture: null,
-    shader: null,
+    renderTexture: null,//用于充当临时绘制的缓冲区 每次对色球进行批量绘制
+    mainTexture: null,//将多种球体的渲染结果再合成到这里
 
+    shader: null,
     mainShader: null,
 
-    balls: null,
+    balls: null,//球体集合管理
 
     ctor: function () {
         this._super();
-
         this.size = cc.winSize;
 
-        this.sprite = new cc.Sprite(res.bg_png);
-        this.sprite.attr({
+        this.backGround = new cc.Sprite(res.bg_png);
+        this.backGround.attr({
             x: this.size.width / 2,
             y: this.size.height / 2
         });
-        this.addChild(this.sprite, 0);
+        this.addChild(this.backGround, 0);
 
         //add the bottle
-        this.bottlePng = new cc.Sprite(res.bottle_png); //CCSprite::create("bottle.png");
+        this.bottlePng = new cc.Sprite(res.bottle_png);
         this.bottlePng.attr({
             x: 0,
             y: 0
@@ -82,22 +79,17 @@ var StageLayer = cc.Layer.extend({
             this.mainShader.setUniformLocationWith1f(this.mainShader.getUniformLocationForName('u_threshold'), 1.75);
             this.mainShader.setUniformLocationWith3f(this.mainShader.getUniformLocationForName('u_outlineColor'), 0 / 255, 255 / 255, 0 / 255);
 ///////////////
-
-
         }
 
-
-        this.mainTexture = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);
-        this.renderTexture = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);
-        this.renderTexture.setPosition(this.size.width / 2.0, this.size.height / 2.0);
-        this.renderTexture.retain();
-
-        //   this.renderTexture.getSprite().shaderProgram = this.shader;
+        this.mainTexture = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);//PIXEL_FORMAT_RGBA4444
         this.mainTexture.getSprite().shaderProgram = this.mainShader;
-
         this.mainTexture.setAnchorPoint(cc.p(0.5, 0.5));
         this.mainTexture.setPosition(this.size.width / 2, this.size.height / 2);
         this.addChild(this.mainTexture, 6);
+
+        this.renderTexture = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);//PIXEL_FORMAT_RGBA8888
+        this.renderTexture.setPosition(this.size.width / 2.0, this.size.height / 2.0);
+        this.renderTexture.retain();
     },
 
     setupClickEvent: function () {
@@ -116,7 +108,7 @@ var StageLayer = cc.Layer.extend({
 
     addNewBall: function (pos, r) {
         var radius = r;
-        mass = 100;
+        var mass = 100;
         var body = this.space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
         body.setPos(cp.v(pos.x, pos.y));
         var circle = this.space.addShape(new cp.CircleShape(body, radius, cp.v(0, 0)));
@@ -125,9 +117,8 @@ var StageLayer = cc.Layer.extend({
 
         var sp = new cc.Sprite(res.ball_png);
         sp.setPosition(pos.x, pos.y);
-        sp.setScale(1.3);
+        sp.setScale(ballScale);//1.3
         sp.retain();
-//this.addChild(sp, 2);
 
         var m_color = 0;
         var tmp = Math.random();
@@ -137,6 +128,7 @@ var StageLayer = cc.Layer.extend({
         //cc.log("@debug: m_color=" +m_color );
         this.balls.push({x: pos.x, y: pos.y, z: sp, b: body, c: m_color});
     },
+
     setupDebugNode: function () {
         // debug only
         this._debugNode = new cc.PhysicsDebugNode(this.space);
@@ -189,7 +181,6 @@ var StageLayer = cc.Layer.extend({
 
         /////////////////for ZERO=red
         this.doColor(0);
-        /////////////////for ONE=green
         this.doColor(1);
         this.doColor(2);
         this.doColor(3);
@@ -203,7 +194,7 @@ var StageLayer = cc.Layer.extend({
             var pre = arr[i];
 
             var floor = this.space.addShape(new cp.SegmentShape(this.space.staticBody, cp.v(pre.x, pre.y), cp.v(next.x, next.y), 0));
-            floor.setElasticity(1);
+            floor.setElasticity(0.3);
             floor.setFriction(1);
             floor.setLayers(NOT_GRABABLE_MASK);
         }
@@ -213,7 +204,7 @@ var StageLayer = cc.Layer.extend({
         cc.log("@debug: begin setupWorld");
 
         this.space = new cp.Space();
-//this.setupDebugNode();
+        if(debugFlg) this.setupDebugNode();
 
         this.space.iterations = 60;
         this.space.gravity = cp.v(0, -110);
@@ -293,9 +284,7 @@ var StageLayer = cc.Layer.extend({
         this.installPosLine(pos9);
 
         for (var i = 1; i <= 10; i++) {
-
             this.addNewBall({x: this.size.width / 2, y: this.size.height * 0.8}, ballR);
-
         }
     }
 });
