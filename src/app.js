@@ -1,4 +1,3 @@
-
 var StageLayer = cc.Layer.extend({
     backGround: null,//±³¾°Í¼Æ¬
     bottlePng: null,
@@ -101,7 +100,7 @@ var StageLayer = cc.Layer.extend({
                     var pp = event.getLocation();
                     //cc.log("@debug: click x=" + pp.x + "; y=" + pp.y);
                     if (pp.y < root.size.height * 0.6)return;
-                    root.addNewBall(pp, ballR);
+                    root.addNewBall(pp, gameCfg.ballR);
                 }
             }, this);
     },
@@ -117,7 +116,7 @@ var StageLayer = cc.Layer.extend({
 
         var sp = new cc.Sprite(res.ball_png);
         sp.setPosition(pos.x, pos.y);
-        sp.setScale(ballScale);//1.3
+        sp.setScale(gameCfg.ballScale);//1.3
         sp.retain();
 
         var m_color = 0;
@@ -204,7 +203,7 @@ var StageLayer = cc.Layer.extend({
         cc.log("@debug: begin setupWorld");
 
         this.space = new cp.Space();
-        if(debugFlg) this.setupDebugNode();
+        if(gameCfg.debugFlg) this.setupDebugNode();
 
         this.space.iterations = 60;
         this.space.gravity = cp.v(0, -110);
@@ -284,7 +283,7 @@ var StageLayer = cc.Layer.extend({
         this.installPosLine(pos9);
 
         for (var i = 1; i <= 10; i++) {
-            this.addNewBall({x: this.size.width / 2, y: this.size.height * 0.8}, ballR);
+            this.addNewBall({x: this.size.width / 2, y: this.size.height * 0.8}, gameCfg.ballR);
         }
     }
 });
