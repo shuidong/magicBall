@@ -5,6 +5,7 @@ var StageLayer = cc.Layer.extend({
     size: null,//
     space: null,//物理世界
     _debugNode: null,
+    _lineDebugNode:null,
 
     renderTexture: null,//用于充当临时绘制的缓冲区 每次对色球进行批量绘制
     mainTexture: null,//将多种球体的渲染结果再合成到这里
@@ -24,7 +25,7 @@ var StageLayer = cc.Layer.extend({
             x: this.size.width / 2,
             y: this.size.height / 2
         });
-        this.addChild(this.backGround, 0);
+        this.addChild(this.backGround, gameCfg.layer_bkGround);
 
         //add the bottle
         this.bottlePng = new cc.Sprite(res.bottle_png);
@@ -34,7 +35,7 @@ var StageLayer = cc.Layer.extend({
         });
         this.bottlePng.anchorX = 0;
         this.bottlePng.anchorY = 0;
-        this.addChild(this.bottlePng, 2);
+        this.addChild(this.bottlePng, gameCfg.layer_bound);
 
         //this.balls = new Array();
         //this.ballMgr = new ballMgr();
@@ -106,7 +107,7 @@ var StageLayer = cc.Layer.extend({
 
         this.mainTexture.setAnchorPoint(cc.p(0.5, 0.5));
         this.mainTexture.setPosition(this.size.width / 2, this.size.height / 2);
-        this.addChild(this.mainTexture, 6);
+        this.addChild(this.mainTexture, gameCfg.layer_balls);
 
         this.renderTexture = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);//PIXEL_FORMAT_RGBA8888
         this.renderTexture.setPosition(this.size.width / 2.0, this.size.height / 2.0);
@@ -167,8 +168,12 @@ var StageLayer = cc.Layer.extend({
     setupDebugNode: function () {
         // debug only
         this._debugNode = new cc.PhysicsDebugNode(this.space);
-        this._debugNode.visible = true;
-        this.addChild(this._debugNode, 5);
+        this._debugNode.visible = gameCfg.debugFlg;
+        this.addChild(this._debugNode, gameCfg.layer_phyDebug);
+
+        this._lineDebugNode = new cc.DrawNode();
+        this._lineDebugNode.visible = gameCfg.debugFlg;
+        this.addChild(this._lineDebugNode, gameCfg.layer_lineDebug);
     },
 
     doColor: function (clo) {
@@ -211,6 +216,19 @@ var StageLayer = cc.Layer.extend({
 
     update: function (dt) {
         this.space.step(dt);
+        
+        if(gameCfg.debugFlg && this._lineDebugNode != undefined){
+            var root = this;
+            this._lineDebugNode.clear();
+            ballMgr.doForAllABs(function(kk){
+                var ids = kk.split("_");
+                var bodya = ballMgr.getBallByID(ids[0]);
+                var bodyb = ballMgr.getBallByID(ids[1]);
+
+                root._lineDebugNode.drawSegment(bodya.b.p, bodyb.b.p, 2, cc.color(0, 0, 0, 255));
+            });
+            
+        }
 
         this.mainTexture.clear(0, 0, 0, 0);
 
@@ -242,10 +260,9 @@ var StageLayer = cc.Layer.extend({
         if(gameCfg.debugFlg) this.setupDebugNode();
 
         this.space.iterations = 60;
-        this.space.gravity = cp.v(0, -110);
+        this.space.gravity = cp.v(0, -98);
         this.space.sleepTimeThreshold = 0.5;
         this.space.collisionSlop = 0.5;
-        this.space.sleepTimeThreshold = 0.5;
 
         var pos = new Array(
             {x: 460.000, y: 957.500},

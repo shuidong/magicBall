@@ -6,7 +6,7 @@ ballMgrClass = function() {
 
 	this.getABString = function(a, b){
 		//if(a === undefined)debugger;
-		var tmp = 'k';
+		var tmp = '';
 		if(a < b){
 			tmp = tmp + a;
 			tmp = tmp + "_" + b;
