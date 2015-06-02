@@ -122,7 +122,12 @@ var StageLayer = cc.Layer.extend({
                 onMouseDown: function (event) {
                     var pp = event.getLocation();
                     //cc.log("@debug: click x=" + pp.x + "; y=" + pp.y);
-                    if (pp.y < root.size.height * 0.6)return;
+                    if (pp.y < root.size.height * 0.6){
+                        ballMgr.clickBallID = ballMgr.getBallIDByPos(pp);
+                        cc.log("@debug: ball clicked id=" + ballMgr.clickBallID);
+                        ballMgr.doForRelationWithID(ballMgr.clickBallID);
+                        return;
+                    };
                     root.addNewBall(pp, gameCfg.ballR);
                 }
             }, this);
@@ -366,11 +371,11 @@ var StageLayer = cc.Layer.extend({
         //var bodies = cp.arbiterGetBodies( arbiter );
         var shapes = arbiter.getShapes();
 
-        var bodyA = shapes[0].body["bid"];
-        var bodyB = shapes[1].body["bid"];
-        if(bodyA === undefined || bodyB === undefined){
+        var bodyA = shapes[0].body;
+        var bodyB = shapes[1].body;
+        if(bodyA["bid"] === undefined || bodyB["bid"] === undefined){
             //debugger;
-            cc.log("@warning: found a bid equals undefined.");
+            //cc.log("@warning: found a bid equals undefined.");
             return true;
         }
         ballMgr.insertAB(bodyA, bodyB);
@@ -380,11 +385,11 @@ var StageLayer = cc.Layer.extend({
     xcollisionPre : function ( arbiter, space ) {
         var shapes = arbiter.getShapes();
 
-        var bodyA = shapes[0].body["bid"];
-        var bodyB = shapes[1].body["bid"];
-        if(bodyA === undefined || bodyB === undefined){
+        var bodyA = shapes[0].body;
+        var bodyB = shapes[1].body;
+        if(bodyA["bid"] === undefined || bodyB["bid"] === undefined){
             //debugger;
-            cc.log("@warning: found a bid equals undefined.");
+            //cc.log("@warning: found a bid equals undefined.");
             return true;
         }
         ballMgr.insertAB(bodyA, bodyB);
@@ -398,12 +403,12 @@ var StageLayer = cc.Layer.extend({
         //cc.log('@debug :collision separate');
         var shapes = arbiter.getShapes();
 
-        var bodyA = shapes[0].body["bid"];
-        var bodyB = shapes[1].body["bid"];
+        var bodyA = shapes[0].body;
+        var bodyB = shapes[1].body;
 
-        if(bodyA === undefined || bodyB === undefined){
+        if(bodyA["bid"] === undefined || bodyB["bid"] === undefined){
             //debugger;
-            cc.log("@warning: found a bid equals undefined(remove).");
+            //cc.log("@warning: found a bid equals undefined(remove).");
             return;
         }
         ballMgr.removeAB(bodyA, bodyB);        
