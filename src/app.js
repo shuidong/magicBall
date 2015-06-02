@@ -12,7 +12,8 @@ var StageLayer = cc.Layer.extend({
     shader: null,
     mainShader: null,
 
-    balls: null,//球体集合管理
+    //balls: null,//球体集合管理
+    //ballMgr : null,
 
     ctor: function () {
         this._super();
@@ -35,7 +36,8 @@ var StageLayer = cc.Layer.extend({
         this.bottlePng.anchorY = 0;
         this.addChild(this.bottlePng, 2);
 
-        this.balls = new Array();
+        //this.balls = new Array();
+        //this.ballMgr = new ballMgr();
 
         this.setupWorld();
 
@@ -127,25 +129,39 @@ var StageLayer = cc.Layer.extend({
 
     addNewBall: function (pos, r) {
         var radius = r;
-        var mass = 100;
+        var mass = 1;
         var body = this.space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, cp.v(0, 0))));
+        body["bid"] = ballMgr.getNextBallID();
         body.setPos(cp.v(pos.x, pos.y));
-        var circle = this.space.addShape(new cp.CircleShape(body, radius, cp.v(0, 0)));
-        circle.setElasticity(0);
-        circle.setFriction(1);//1
-
-        var sp = new cc.Sprite(res.ball_png);
-        sp.setPosition(pos.x, pos.y);
-        sp.setScale(gameCfg.ballScale);//1.3
-        sp.retain();
-
+        
         var m_color = 0;
         var tmp = Math.random();
         if (tmp >= 0.25) m_color = 1;
         if (tmp >= 0.5) m_color = 2;
         if (tmp >= 0.75) m_color = 3;
         //cc.log("@debug: m_color=" +m_color );
-        this.balls.push({x: pos.x, y: pos.y, z: sp, b: body, c: m_color});
+
+        var _shape = new cp.CircleShape(body, radius, cp.v(0, 0));
+        _shape.setCollisionType(m_color);
+
+        var circle = this.space.addShape(_shape);
+        circle.setElasticity(0);
+        circle.setFriction(1);//1
+
+        var sp = new cc.Sprite(res.ball_png);
+        sp.setAnchorPoint(0.5, 0.5);
+        sp.setPosition(pos.x, pos.y);
+        sp.setScale(gameCfg.ballScale);//1.3
+        sp.retain();
+
+        //ballMgr.
+        var tmpBall = new ballClass();
+        tmpBall.z = sp;
+        tmpBall.b = body;
+        tmpBall.c = m_color;
+
+        ballMgr.addBall(tmpBall);
+        //this.balls.push({z: sp, b: body, c: m_color});//x: pos.x, y: pos.y,
     },
 
     setupDebugNode: function () {
@@ -160,16 +176,14 @@ var StageLayer = cc.Layer.extend({
         this.renderTexture.clear(0, 0, 0, 0);
         this.renderTexture.begin();
 
-        for (var j = 0; j < this.balls.length; j++) {
-            var tmp = this.balls[j];
-            var tsp = tmp.z;
-//debugger;
-            if (tmp.c != clo)continue;
+        ballMgr.forAllBalls(function(tmp){
+            if (tmp.c != clo)return;
             var poss = tmp.b.p;
-            tsp.setAnchorPoint(0.5, 0.5);
+            
+            var tsp = tmp.z;
             tsp.setPosition(poss.x, poss.y);
             tsp.visit();
-        }
+        });
 
         this.renderTexture.end();
 
@@ -307,6 +321,61 @@ var StageLayer = cc.Layer.extend({
         for (var i = 1; i <= 10; i++) {
             this.addNewBall({x: this.size.width / 2, y: this.size.height * 0.8}, gameCfg.ballR);
         }
+
+        for(var tt = 0; tt < 4; tt++){
+            this.space.addCollisionHandler(tt, tt,
+                        this.collisionBegin.bind(this),
+                        this.collisionPre.bind(this),
+                        this.collisionPost.bind(this),
+                        this.collisionSeparate.bind(this) );
+        }
+        
+    },
+
+    onExit : function() {
+        cp.spaceRemoveCollisionHandler( this.space, 0, 1, 2, 3 );
+        cp.spaceFree( this.space );
+        StageLayer.prototype.onExit.call(this);
+    },
+
+    collisionBegin : function ( arbiter, space ) {
+        //cc.log('@debug :collision begin');
+        //var bodies = cp.arbiterGetBodies( arbiter );
+        var shapes = arbiter.getShapes();
+
+        var bodyA = shapes[0].body["bid"];
+        var bodyB = shapes[1].body["bid"];
+        if(bodyA === undefined || bodyB === undefined){
+            //debugger;
+            cc.log("@warning: found a bid equals undefined.");
+            return;
+        }
+        ballMgr.insertAB(bodyA, bodyB);
+        return true;
+    },
+
+    collisionPre : function ( arbiter, space ) {
+        //cc.log('@debug :collision pre');
+        return true;
+    },
+
+    collisionPost : function ( arbiter, space ) {
+        //cc.log('@debug :collision post');
+    },
+
+    collisionSeparate : function ( arbiter, space ) {
+        //cc.log('@debug :collision separate');
+        var shapes = arbiter.getShapes();
+
+        var bodyA = shapes[0].body["bid"];
+        var bodyB = shapes[1].body["bid"];
+
+        if(bodyA === undefined || bodyB === undefined){
+            //debugger;
+            cc.log("@warning: found a bid equals undefined(remove).");
+            return;
+        }
+        ballMgr.removeAB(bodyA, bodyB);        
     }
 });
 
