@@ -47,6 +47,8 @@ var StageLayer = cc.Layer.extend({
 
         this.setupGL();
 
+        this.setupMenu();
+
         this.scheduleUpdate();
         return true;
     },
@@ -114,6 +116,56 @@ var StageLayer = cc.Layer.extend({
         this.renderTexture.retain();
     },
 
+    onMenuAddBallClicked: function(sender) {
+        //cc.log('@debug: onMenuAddBallClicked');
+        this.addNewBall({x: this.size.width / 2, y: this.size.height * 0.7}, gameCfg.ballR);
+        this.addNewBall({x: this.size.width / 2 - 20, y: this.size.height * 0.6}, gameCfg.ballR);
+        this.addNewBall({x: this.size.width / 2 + 20, y: this.size.height * 0.8}, gameCfg.ballR);
+    },
+
+    onMenuDm1Clicked: function(sender) {
+        if(gameCfg.lineDebug){//close debug mode
+            this._lineDebugNode.visible = false;
+        }else{
+            this._lineDebugNode.visible = true;
+        }
+        gameCfg.lineDebug = !gameCfg.lineDebug;
+    },
+
+    onMenuDm2Clicked: function(sender) {
+        if(gameCfg.debugFlg){//close debug mode
+            this._debugNode.visible = false;
+        }else{
+            this._debugNode.visible = true;
+        }
+        gameCfg.debugFlg = !gameCfg.debugFlg;        
+    },
+
+    setupMenu : function(){
+        var ctrlMenu = new cc.Menu();
+        ctrlMenu.x = 0;
+        ctrlMenu.y = 0;
+        this.addChild(ctrlMenu, gameCfg.layer_menu);
+        
+        var addBallTxt = new cc.LabelTTF("click here to add balls", "Arial", 40);
+        var itemAddBall = new cc.MenuItemLabel(addBallTxt, this.onMenuAddBallClicked, this);
+        itemAddBall.x = this.size.width / 2;
+        itemAddBall.y = this.size.height - 50;
+        ctrlMenu.addChild(itemAddBall);
+        
+        var dmode1Txt = new cc.LabelTTF("debugMode(link line ON/OFF)", "Arial", 40);
+        var itemDmode1 = new cc.MenuItemLabel(dmode1Txt, this.onMenuDm1Clicked, this);
+        itemDmode1.x = this.size.width / 2;
+        itemDmode1.y = this.size.height - 100;
+        ctrlMenu.addChild(itemDmode1);
+
+        var dmode2Txt = new cc.LabelTTF("debugMode(body visiable ON/OFF)", "Arial", 40);
+        var itemDmode2 = new cc.MenuItemLabel(dmode2Txt, this.onMenuDm2Clicked, this);
+        itemDmode2.x = this.size.width / 2;
+        itemDmode2.y = this.size.height - 150;
+        ctrlMenu.addChild(itemDmode2);
+    },
+
     setupClickEvent: function () {
         var root = this;
         if ('mouse' in cc.sys.capabilities)
@@ -122,7 +174,7 @@ var StageLayer = cc.Layer.extend({
                 onMouseDown: function (event) {
                     var pp = event.getLocation();
                     //cc.log("@debug: click x=" + pp.x + "; y=" + pp.y);
-                    if (pp.y < root.size.height * 0.6){
+                    if (true || pp.y < root.size.height * 0.6){
                         ballMgr.clickBallID = ballMgr.getBallIDByPos(pp);
                         // cc.log("@debug: ball clicked id=" + ballMgr.clickBallID);
                         if(-1 == ballMgr.clickBallID)return;//如果没有击中小球则不处理
@@ -139,7 +191,7 @@ var StageLayer = cc.Layer.extend({
                         ballMgr.destoryBalls(ballsSet, root.space, nodeCount >= gameCfg.minNodeCount);
                         return;
                     };
-                    root.addNewBall(pp, gameCfg.ballR);
+                    //root.addNewBall(pp, gameCfg.ballR);
                 }
             }, this);
     },
@@ -190,17 +242,18 @@ var StageLayer = cc.Layer.extend({
 
     setupDebugNode: function () {
         // debug only
-        if(gameCfg.debugFlg) {
-            this._debugNode = new cc.PhysicsDebugNode(this.space);
-            this._debugNode.visible = gameCfg.debugFlg;
-            this.addChild(this._debugNode, gameCfg.layer_phyDebug);            
-        }
-
-        if(gameCfg.lineDebug){
-            this._lineDebugNode = new cc.DrawNode();
-            this._lineDebugNode.visible = gameCfg.lineDebug;
-            this.addChild(this._lineDebugNode, gameCfg.layer_lineDebug);
-        }
+        this._debugNode = new cc.PhysicsDebugNode(this.space);
+        this._debugNode.visible = gameCfg.debugFlg;
+        this.addChild(this._debugNode, gameCfg.layer_phyDebug); 
+        // if(gameCfg.debugFlg) {
+                       
+        // }
+        this._lineDebugNode = new cc.DrawNode();
+        this._lineDebugNode.visible = gameCfg.lineDebug;
+        this.addChild(this._lineDebugNode, gameCfg.layer_lineDebug);
+        // if(gameCfg.lineDebug){
+            
+        // }
         
     },
 
