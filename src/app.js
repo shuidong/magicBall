@@ -124,8 +124,19 @@ var StageLayer = cc.Layer.extend({
                     //cc.log("@debug: click x=" + pp.x + "; y=" + pp.y);
                     if (pp.y < root.size.height * 0.6){
                         ballMgr.clickBallID = ballMgr.getBallIDByPos(pp);
-                        cc.log("@debug: ball clicked id=" + ballMgr.clickBallID);
-                        ballMgr.doForRelationWithID(ballMgr.clickBallID);
+                        // cc.log("@debug: ball clicked id=" + ballMgr.clickBallID);
+                        if(-1 == ballMgr.clickBallID)return;//如果没有击中小球则不处理
+                        
+                        var ballsSet = [];
+                        var vistedFlgs = [];
+
+                        //先加入最原始的结点
+                        ballsSet[ballMgr.clickBallID] = ballMgr.clickBallID;
+                        ballMgr.BFSForTree(ballMgr.clickBallID, ballsSet, vistedFlgs);
+
+                        var nodeCount = util.getArraySize(ballsSet);
+                        //cc.log('@debug: nodeCount='+ nodeCount);
+                        ballMgr.destoryBalls(ballsSet, root.space, nodeCount >= gameCfg.minNodeCount);
                         return;
                     };
                     root.addNewBall(pp, gameCfg.ballR);
@@ -170,6 +181,8 @@ var StageLayer = cc.Layer.extend({
         tmpBall.z = sp;
         tmpBall.b = body;
         tmpBall.c = m_color;
+        tmpBall.sensor = _sensor;
+        tmpBall.sshape = _shape;
 
         ballMgr.addBall(tmpBall);
         //this.balls.push({z: sp, b: body, c: m_color});//x: pos.x, y: pos.y,
@@ -253,6 +266,7 @@ var StageLayer = cc.Layer.extend({
         this.doColor(2);
         this.doColor(3);
 
+        effMgr.update(dt);
     },
 
     installPosLine: function (arr) {

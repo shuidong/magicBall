@@ -19,7 +19,10 @@ var gameCfg = gameCfg || {
         layer_phyDebug : 10,
         layer_balls : 20,
         layer_bound : 30,
-        layer_lineDebug : 40
+        layer_lineDebug : 40,
+
+        effTimeLength : 1.0,//缩放特效时间
+        minNodeCount : 3//允许消除的最小连接数
 
     };
 
