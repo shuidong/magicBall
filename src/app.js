@@ -153,17 +153,22 @@ var StageLayer = cc.Layer.extend({
         itemAddBall.y = this.size.height - 50;
         ctrlMenu.addChild(itemAddBall);
         
-        var dmode1Txt = new cc.LabelTTF("debugMode(link line ON/OFF)", "Arial", 40);
+        var dmode1Txt = new cc.LabelTTF("debugMode(link line ON/OFF)", "Arial", 30);
         var itemDmode1 = new cc.MenuItemLabel(dmode1Txt, this.onMenuDm1Clicked, this);
         itemDmode1.x = this.size.width / 2;
         itemDmode1.y = this.size.height - 100;
         ctrlMenu.addChild(itemDmode1);
 
-        var dmode2Txt = new cc.LabelTTF("debugMode(body visiable ON/OFF)", "Arial", 40);
+        var dmode2Txt = new cc.LabelTTF("debugMode(body visiable ON/OFF)", "Arial", 30);
         var itemDmode2 = new cc.MenuItemLabel(dmode2Txt, this.onMenuDm2Clicked, this);
         itemDmode2.x = this.size.width / 2;
         itemDmode2.y = this.size.height - 150;
         ctrlMenu.addChild(itemDmode2);
+
+        var introTxt = new cc.LabelTTF("HowToPlay=click the balls' chain(balls' count >= 3) to destory them!", "Arial", 20);
+        introTxt.x = this.size.width / 2;
+        introTxt.y = this.size.height - 200;
+        this.addChild(introTxt, gameCfg.layer_menu);
     },
 
     setupClickEvent: function () {
@@ -417,8 +422,9 @@ var StageLayer = cc.Layer.extend({
         this.installPosLine(pos8);
         this.installPosLine(pos9);
 
-        for (var i = 1; i <= gameCfg.initBallCount; i++) {
+        for (var i = 1; i <= gameCfg.initBallCount / 2; i++) {
             this.addNewBall({x: this.size.width / 2, y: this.size.height * 0.8}, gameCfg.ballR);
+            this.addNewBall({x: this.size.width / 2 + 20, y: this.size.height * 0.5}, gameCfg.ballR);
         }
 
         for(var tt = 0; tt < 4; tt++){
