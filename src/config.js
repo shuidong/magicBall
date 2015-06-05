@@ -12,7 +12,7 @@ var gameCfg = gameCfg || {
         alphaThold : 0.2,//临界alpha值 0.19
 
         debugFlg : false,//标志位用于 显示/隐藏 物理引擎调试图
-        lineDebug : true,//是否显示关系线条
+        lineDebug : false,//是否显示关系线条
         initBallCount : 10,//初始小球数量
 
         layer_bkGround : 0,
