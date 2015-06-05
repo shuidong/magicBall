@@ -9,7 +9,7 @@ var gameCfg = gameCfg || {
         ballScale : 1.1,//小球素材的放大比率 1.2
         sensorScale : 1.3,//碰撞区域比实体稍大
 
-        alphaThold : 0.2,//临界alpha值 0.19
+        alphaThold : 0.175,//临界alpha值 0.19
 
         debugFlg : false,//标志位用于 显示/隐藏 物理引擎调试图
         lineDebug : false,//是否显示关系线条
