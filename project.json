@@ -3,6 +3,7 @@
     "frameRate"     : 60,
     "id"            : "gameCanvas",
     "renderMode"    : 0,
+    "modules"       : ["cocos2d", "extensions", "external"],
 
     "jsList" : [
         "src/resource.js",

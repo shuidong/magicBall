@@ -5,8 +5,8 @@ var GRABABLE_MASK_BIT = 1 << 31;
 var NOT_GRABABLE_MASK = ~GRABABLE_MASK_BIT;
 
 var gameCfg = gameCfg || {
-        ballR : 20,//30 小球的物理半径
-        ballScale : 1.1,//小球素材的放大比率 1.2
+        ballR : 20,//30 小球的物理半径//ios-20
+        ballScale : 1.1,//小球素材的放大比率 1.2 ios-0.5
         sensorScale : 1.3,//碰撞区域比实体稍大
 
         alphaThold : 0.21,//临界alpha值 0.19 .20

@@ -10,8 +10,16 @@ var StageLayer = cc.Layer.extend({
     renderTexture: null,//用于充当临时绘制的缓冲区 每次对色球进行批量绘制
     mainTexture: null,//将多种球体的渲染结果再合成到这里
 
+    renderTexture1: null,
+    renderTexture2: null,
+    renderTexture3: null,
+
     shader: null,
     mainShader: null,
+
+    shader1: null,
+    shader2: null,
+    shader3: null,
 
     //balls: null,//球体集合管理
     //ballMgr : null,
@@ -57,16 +65,41 @@ var StageLayer = cc.Layer.extend({
         if ('opengl' in cc.sys.capabilities) {
             //var t = 0;
             if(cc.sys.isNative){
-                this.shader = new cc.GLProgram(res.vsh, res.fsh);
+                this.shader = new cc.GLProgram(res.openGLvsh, res.openGLfsh);
                 this.shader.link();
                 this.shader.updateUniforms();
+
+                this.shader1 = new cc.GLProgram(res.openGLvsh, res.openGLfsh);
+                this.shader1.link();
+                this.shader1.updateUniforms();
+
+                this.shader2 = new cc.GLProgram(res.openGLvsh, res.openGLfsh);
+                this.shader2.link();
+                this.shader2.updateUniforms();
+
+                this.shader3 = new cc.GLProgram(res.openGLvsh, res.openGLfsh);
+                this.shader3.link();
+                this.shader3.updateUniforms();                                                
 
                 var glProgram_state = cc.GLProgramState.getOrCreateWithGLProgram(this.shader);
                 glProgram_state.setUniformFloat("u_alpha_value", gameCfg.alphaThold);
                 glProgram_state.setUniformFloat("u_color_value", 0.0);
+
+                var glProgram_state = cc.GLProgramState.getOrCreateWithGLProgram(this.shader1);
+                glProgram_state.setUniformFloat("u_alpha_value", gameCfg.alphaThold);
+                glProgram_state.setUniformFloat("u_color_value", 0.0);
+
+                var glProgram_state = cc.GLProgramState.getOrCreateWithGLProgram(this.shader2);
+                glProgram_state.setUniformFloat("u_alpha_value", gameCfg.alphaThold);
+                glProgram_state.setUniformFloat("u_color_value", 0.0);
+
+
+                var glProgram_state = cc.GLProgramState.getOrCreateWithGLProgram(this.shader3);
+                glProgram_state.setUniformFloat("u_alpha_value", gameCfg.alphaThold);
+                glProgram_state.setUniformFloat("u_color_value", 0.0);
                 //this.sprite.setGLProgramState(glProgram_state);
 
-                this.mainShader = new cc.GLProgram(res.vsh2, res.fsh2);
+                this.mainShader = new cc.GLProgram(res.openGLvsh2, res.openGLfsh2);
                 this.mainShader.link();
                 this.mainShader.updateUniforms();
             }
@@ -113,6 +146,20 @@ var StageLayer = cc.Layer.extend({
         this.renderTexture = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);//PIXEL_FORMAT_RGBA8888
         this.renderTexture.setPosition(this.size.width / 2.0, this.size.height / 2.0);
         this.renderTexture.retain();
+
+if(cc.sys.isNative){
+        this.renderTexture1 = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);//PIXEL_FORMAT_RGBA8888
+        this.renderTexture1.setPosition(this.size.width / 2.0, this.size.height / 2.0);
+        this.renderTexture1.retain();
+
+        this.renderTexture2 = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);//PIXEL_FORMAT_RGBA8888
+        this.renderTexture2.setPosition(this.size.width / 2.0, this.size.height / 2.0);
+        this.renderTexture2.retain();
+
+        this.renderTexture3 = new cc.RenderTexture(this.size.width, this.size.height, cc.Texture2D.PIXEL_FORMAT_RGBA4444);//PIXEL_FORMAT_RGBA8888
+        this.renderTexture3.setPosition(this.size.width / 2.0, this.size.height / 2.0);
+        this.renderTexture3.retain();
+}
     },
 
     onMenuAddBallClicked: function(sender) {
@@ -261,10 +308,13 @@ var StageLayer = cc.Layer.extend({
         
     },
 
-    doColor: function (clo) {
-
-        this.renderTexture.clear(0, 0, 0, 0);
-        this.renderTexture.begin();
+    doColor: function (clo, this_renderTexture, this_shader) {
+        if(!cc.sys.isNative){
+            this_renderTexture = this.renderTexture;
+            this_shader = this.shader;
+        }
+        this_renderTexture.clear(0, 0, 0, 0);
+        this_renderTexture.begin();
 
         ballMgr.forAllBalls(function(tmp){
             if (tmp.c != clo)return;
@@ -275,28 +325,41 @@ var StageLayer = cc.Layer.extend({
             tsp.visit();
         });
 
-        this.renderTexture.end();
+        this_renderTexture.end();
+        // cc.renderer.render();
+        //Director::getInstance()->getRenderer()->render();
 
-        var xsprite = new cc.Sprite(this.renderTexture.getSprite().texture);
-        xsprite.setAnchorPoint(cc.p(0.5, 0.5));
-        xsprite.setPosition(this.size.width / 2, this.size.height / 2);
-        xsprite.setScaleY(-1);
+        
         if(cc.sys.isNative){
-            var glProgram_state3 = cc.GLProgramState.getOrCreateWithGLProgram(this.shader);
-            xsprite.setGLProgramState(glProgram_state3);
-            xsprite.getGLProgramState().setUniformFloat("u_color_value", clo);
+            var glProgram_state3 = cc.GLProgramState.getOrCreateWithGLProgram(this_shader);
+            glProgram_state3.setUniformFloat("u_color_value", clo);
+
+            this_renderTexture.getSprite().setGLProgramState(glProgram_state3);
+
+            this_renderTexture.getSprite().setAnchorPoint(cc.p(0.5, 0.5));
+            this_renderTexture.getSprite().setPosition(this.size.width / 2, this.size.height / 2);
+
+            this.mainTexture.begin();
+            this_renderTexture.getSprite().visit();
+            this.mainTexture.end();
         }else{
+            var xsprite = new cc.Sprite(this.renderTexture.getSprite().texture);
+            xsprite.setAnchorPoint(cc.p(0.5, 0.5));
+            xsprite.setPosition(this.size.width / 2, this.size.height / 2);
+            xsprite.setScaleY(-1);            
             xsprite.shaderProgram = this.shader;
             this.shader.use();
             this.shader.setUniformLocationWith1f(this.shader.getUniformLocationForName('u_color_value'), clo);
             this.shader.updateUniforms();
             //this.mainShader.use();
             //this.mainShader.updateUniforms();
+
+            this.mainTexture.begin();
+            xsprite.visit();
+            this.mainTexture.end();
         }
 
-        this.mainTexture.begin();
-        xsprite.visit();
-        this.mainTexture.end();
+        
     },
 
     update: function (dt) {
@@ -318,10 +381,10 @@ var StageLayer = cc.Layer.extend({
         this.mainTexture.clear(0, 0, 0, 0);
 
         /////////////////for ZERO=red
-        this.doColor(0);
-        this.doColor(1);
-        this.doColor(2);
-        this.doColor(3);
+        this.doColor(0, this.renderTexture, this.shader);
+        this.doColor(1, this.renderTexture1, this.shader1);
+        this.doColor(2, this.renderTexture2, this.shader2);
+        this.doColor(3, this.renderTexture3, this.shader3);
 
         effMgr.update(dt);
     },

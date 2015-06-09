@@ -4,7 +4,7 @@ precision lowp float;
                                                              
 varying vec4 v_fragmentColor;                                 
 varying vec2 v_texCoord;                                     
-uniform sampler2D u_texture;    
+//uniform sampler2D u_texture;    
                     
 uniform vec3 u_outlineColor;
 uniform float u_threshold;
@@ -19,12 +19,12 @@ void main()
     float radius = u_radius;
     vec4 accum = vec4(0.0);
     vec4 normal = vec4(0.0);
-    normal = texture2D(u_texture, vec2(v_texCoord.x, v_texCoord.y));
+    normal = texture2D(CC_Texture0, vec2(v_texCoord.x, v_texCoord.y));
     
-    accum += texture2D(u_texture, vec2(v_texCoord.x - rx, v_texCoord.y - ry));
-    accum += texture2D(u_texture, vec2(v_texCoord.x + rx, v_texCoord.y - ry));
-    accum += texture2D(u_texture, vec2(v_texCoord.x + rx, v_texCoord.y + ry));
-    accum += texture2D(u_texture, vec2(v_texCoord.x - rx, v_texCoord.y + ry));
+    accum += texture2D(CC_Texture0, vec2(v_texCoord.x - rx, v_texCoord.y - ry));
+    accum += texture2D(CC_Texture0, vec2(v_texCoord.x + rx, v_texCoord.y - ry));
+    accum += texture2D(CC_Texture0, vec2(v_texCoord.x + rx, v_texCoord.y + ry));
+    accum += texture2D(CC_Texture0, vec2(v_texCoord.x - rx, v_texCoord.y + ry));
     
     accum *= 1.1;
     accum.rgb = vec3(201.0/255.0, 186.0/255.0, 131.0/255.0) * accum.a;
